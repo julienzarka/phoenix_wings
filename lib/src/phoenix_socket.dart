@@ -87,25 +87,17 @@ class PhoenixSocket {
       return;
     }
 
-    for (int tries = 0; _conn == null; tries += 1) {
+    _reconnect = true;
+    for (int tries = 0; _conn == null && _reconnect; tries += 1) {
       try {
         _conn = _connectionProvider(_endpoint.toString());
         await _conn.waitForConnection();
       } catch (reason) {
         _conn = null;
-        print(
-            "WebSocket connection to ${_endpoint.toString()} failed!: $reason");
-
-        tries += 1;
-        var wait = reconnectAfterMs[min(tries, reconnectAfterMs.length - 1)];
-        await new Future.delayed(new Duration(milliseconds: wait));
-
-        continue;
+        _stateChangeCallbacks.error.forEach((cb) => cb(reason));
+        return;
       }
-
-      _reconnect = true;
       _onConnOpened();
-
       if (_conn != null) {
         _conn
           ..onClose(reconnect)
