@@ -46,7 +46,6 @@ class PhoenixChannel {
         new PhoenixPush(this, PhoenixChannelEvents.join, _params, timeout);
 
     _joinPush.receive("ok", (msg) {
-      print('>>> connected to channel $_topic');
       _state = PhoenixChannelState.joined;
       _pushBuffer.forEach((pushEvent) => pushEvent.send());
       _pushBuffer = [];
@@ -202,7 +201,6 @@ class PhoenixChannel {
     if (payload != null && handledPayload == null) {
       throw ("channel onMessage callback must return payload modified or unmodified");
     }
-    print('>>>> new message on event $event / $payload');
     _bindings.where((bound) => bound.event == event).forEach((bound) =>
         bound.callback(handledPayload, ref, joinRefParam ?? joinRef));
   }
