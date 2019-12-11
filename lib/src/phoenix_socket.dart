@@ -146,16 +146,13 @@ class PhoenixSocket {
 
   void _onConnMessage(String rawJSON) {
     final message = this._decode(rawJSON);
-
     if (_pendingHeartbeatRef != null && message.ref == _pendingHeartbeatRef) {
       _pendingHeartbeatRef = null;
     }
-
-    channels
-        .where((channel) => channel.isMember(
-            message.topic, message.event, message.payload, message.joinRef))
-        .forEach((channel) => channel.trigger(
-            message.event, message.payload, message.ref, message.joinRef));
+    for (PhoenixChannel channel in channels.where((channel) => channel.isMember(
+        message.topic, message.event, message.payload, message.joinRef)).toList()) {
+      channel.trigger(message.event, message.payload, message.ref, message.joinRef);
+    }
     _stateChangeCallbacks.message.forEach((callback) => callback(message));
   }
 
